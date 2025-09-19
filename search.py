@@ -16,7 +16,8 @@
 In search.py, you will implement generic search algorithms which are called by
 Pacman agents (in searchAgents.py).
 """
-
+import heapq
+import queue
 from abc import ABC, abstractmethod
 
 import util
@@ -109,29 +110,71 @@ def breadthFirstSearch(problem):
     if problem.isGoalState(start):
         return []
 
-    frontier = Queue()
-    frontier.push((start, []))  # (estado, camino_de_acciones)
-    visited = set([start])
+    frontera = Queue()
+    frontera.push((start, []))  # (estado, camino_de_acciones)
+    visitados = set([start])
 
-    while not frontier.isEmpty():
-        state, path = frontier.pop()
 
-        if problem.isGoalState(state):
-            return path
+    while not frontera.isEmpty():
+        estado, camino = frontera.pop()
 
-        for successor, action, stepCost in problem.getSuccessors(state):
-            if successor not in visited:
-                visited.add(successor)
-                frontier.push((successor, path + [action]))
+        if problem.isGoalState(estado):
+            return camino
+
+        for hijo, accion, costeAccion in problem.getSuccessors(estado):
+            if hijo not in visitados:
+                visitados.add(hijo)
+                frontera.push((hijo, camino + [accion]))
+
 
     return []
 
 
 
+
+
+import heapq
+
 def uniformCostSearch(problem):
-    """Search the node of least total cost first."""
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    """
+    Returns a list of actions that reaches the goal with minimum path cost.
+    Assumes:
+      - problem.getStartState()
+      - problem.isGoalState(state) -> bool
+      - problem.getSuccessors(state) -> (successor, action, stepCost)
+      - problem.getCostOfActions(actions) -> float
+      ESTARIA ESTE MINI ESQUEMA EN EL ENUNCIADO YA QUE ME HA COSTADO ENTENDER LA ESTRUCTURA DE LA CLASE PROBLEMA :>
+    """
+    estado_inicial = problem.getStartState()
+    # cola ordenada automaticamente por prioridad
+    cola_prioridad = [(0.0, estado_inicial, [])]
+    # mejor coste por estado
+    mejor_coste = {estado_inicial: 0.0}
+
+    while cola_prioridad:
+        coste_Actual, estado_actual, acciones = heapq.heappop(cola_prioridad)
+
+        # Saltamos las entradas que no sean utiles
+        if coste_Actual > mejor_coste.get(estado_actual, float("inf")):
+            continue
+
+        # verificamos si estamos en la solucion
+        if problem.isGoalState(estado_actual):
+            return acciones
+
+        # Estudiamos cada hijo del nodo X y lo añadimos si procede
+        for estados_hijos, accion, coste_p in problem.getSuccessors(estado_actual):
+
+            candidate_cost = coste_Actual + coste_p
+            if candidate_cost < mejor_coste.get(estados_hijos, float("inf")):
+                mejor_coste[estados_hijos] = candidate_cost
+
+                heapq.heappush(cola_prioridad,(candidate_cost, estados_hijos, acciones + [accion]))
+
+    return []
+
+
+
 
 
 def nullHeuristic(state, problem=None):
