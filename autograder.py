@@ -1,18 +1,4 @@
-# autograder.py
-# -------------
-# Licensing Information:  You are free to use or extend these projects for
-# educational purposes provided that (1) you do not distribute or publish
-# solutions, (2) you retain this notice, and (3) you provide clear
-# attribution to UC Berkeley, including a link to http://ai.berkeley.edu.
-# 
-# Attribution Information: The Pacman AI projects were developed at UC Berkeley.
-# The core projects and autograders were primarily created by John DeNero
-# (denero@cs.berkeley.edu) and Dan Klein (klein@cs.berkeley.edu).
-# Student side autograding was added by Brad Miller, Nick Hay, and
-# Pieter Abbeel (pabbeel@cs.berkeley.edu).
-
-
-import imp
+import importlib.util
 import optparse
 import os
 import random
@@ -114,7 +100,8 @@ def setModuleName(module, filename):
 
     for i in dir(module):
         o = getattr(module, i)
-        if hasattr(o, '__file__'): continue
+        if hasattr(o, '__file__'):
+            continue
 
         if isinstance(o, functionType):
             setattr(o, '__file__', filename)
@@ -125,8 +112,15 @@ def setModuleName(module, filename):
 
 
 def loadModuleFile(moduleName, filePath):
-    with open(filePath, 'r') as f:
-        return imp.load_module(moduleName, f, f"{moduleName}.py", (".py", "r", imp.PY_SOURCE))
+    """Carga un módulo desde una ruta de archivo usando importlib (sustituto de imp)."""
+    spec = importlib.util.spec_from_file_location(moduleName, filePath)
+    if spec is None or spec.loader is None:
+        raise ImportError("Cannot load spec for module %r from %r" % (moduleName, filePath))
+    module = importlib.util.module_from_spec(spec)
+    # (Opcional) registrar en sys.modules, por si hay importaciones relativas internas
+    sys.modules[moduleName] = module
+    spec.loader.exec_module(module)
+    return module
 
 
 def readFile(path, root=""):
@@ -316,12 +310,6 @@ if __name__ == '__main__':
     if options.generateSolutions:
         confirmGenerate()
     codePaths = options.studentCode.split(',')
-    # moduleCodeDict = {}
-    # for cp in codePaths:
-    #     moduleName = re.match('.*?([^/]*)\.py', cp).group(1)
-    #     moduleCodeDict[moduleName] = readFile(cp, root=options.codeRoot)
-    # moduleCodeDict['projectTestClasses'] = readFile(options.testCaseCode, root=options.codeRoot)
-    # moduleDict = loadModuleDict(moduleCodeDict)
 
     moduleDict = {}
     for cp in codePaths:
