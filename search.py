@@ -96,12 +96,21 @@ def depthFirstSearch(problem):
     print("Start's successors:", problem.getSuccessors(problem.getStartState()))
     """
     "*** YOUR CODE HERE ***"
-    from util import Queue
+    from util import Stack
     start = problem.getStartState()
+    visitados = []
+    frontier = Stack()
+    frontier.push(start)
 
-    if problem.isGoalState(start):
-        return []
-
+    while not frontier.isEmpty():
+        node = frontier.pop()
+        visitados.append(node)
+        if problem.isGoalState(node.state):
+            return []
+        for successor in problem.getSuccessors(node.state):
+            if successor not in visitados:
+                frontier.push(successor)
+    return []
 def breadthFirstSearch(problem):
     """Search the shallowest nodes in the search tree first."""
     from util import Queue
