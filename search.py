@@ -21,6 +21,7 @@ import queue
 from abc import ABC, abstractmethod
 
 import util
+from util import Queue
 
 
 class SearchProblem(ABC):
@@ -191,6 +192,7 @@ def nullHeuristic(state, problem=None):
     A heuristic function estimates the cost from the current state to the nearest
     goal in the provided SearchProblem.  This heuristic is trivial.
     """
+    # ESTO SIRVE PARA HACER EL A* SIN HEURISTICO EN EL CASO DE QUERER USAR O MHTAN O EUC ESTAN YA IMPLEMENTADOS *
     return 0
 
 
