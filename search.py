@@ -138,40 +138,32 @@ def breadthFirstSearch(problem):
 import heapq
 
 def uniformCostSearch(problem):
-    """
-    Returns a list of actions that reaches the goal with minimum path cost.
-    Assumes:
-      - problem.getStartState()
-      - problem.isGoalState(state) -> bool
-      - problem.getSuccessors(state) -> (successor, action, stepCost)
-      - problem.getCostOfActions(actions) -> float
-      ESTARIA ESTE MINI ESQUEMA EN EL ENUNCIADO YA QUE ME HA COSTADO ENTENDER LA ESTRUCTURA DE LA CLASE PROBLEMA :>
-    """
+    from util import PriorityQueue
+
     estado_inicial = problem.getStartState()
-    # cola ordenada automaticamente por prioridad
-    cola_prioridad = [(0.0, estado_inicial, [])]
-    # mejor coste por estado
-    mejor_coste = {estado_inicial: 0.0}
+    frontera = PriorityQueue()                     # elementos: (estado, acciones, g)
+    frontera.push((estado_inicial, [], 0.0), 0.0)  # prioridad = coste acumulado g
 
-    while cola_prioridad:
-        coste_Actual, estado_actual, acciones = heapq.heappop(cola_prioridad)
+    mejor_coste = {estado_inicial: 0.0}            # g*(estado)
+    # no es obligatorio un conjunto de visitados si se filtran entradas por mejor g
 
-        # Saltamos las entradas que no sean utiles
-        if coste_Actual > mejor_coste.get(estado_actual, float("inf")):
+    while not frontera.isEmpty():
+        estado, acciones, g = frontera.pop()
+
+        # Ignorar entradas obsoletas con peor g que el mejor conocido
+        if g > mejor_coste.get(estado, float("inf")):
             continue
 
-        # verificamos si estamos en la solucion
-        if problem.isGoalState(estado_actual):
+        # Objetivo alcanzado: devolver la secuencia de acciones
+        if problem.isGoalState(estado):
             return acciones
 
-        # Estudiamos cada hijo del nodo X y lo añadimos si procede
-        for estados_hijos, accion, coste_p in problem.getSuccessors(estado_actual):
-
-            candidate_cost = coste_Actual + coste_p
-            if candidate_cost < mejor_coste.get(estados_hijos, float("inf")):
-                mejor_coste[estados_hijos] = candidate_cost
-
-                heapq.heappush(cola_prioridad,(candidate_cost, estados_hijos, acciones + [accion]))
+        # Expandir sucesores
+        for sucesor, accion, coste_paso in problem.getSuccessors(estado):
+            nuevo_g = g + coste_paso
+            if nuevo_g < mejor_coste.get(sucesor, float("inf")):
+                mejor_coste[sucesor] = nuevo_g
+                frontera.push((sucesor, acciones + [accion], nuevo_g), nuevo_g)
 
     return []
 
