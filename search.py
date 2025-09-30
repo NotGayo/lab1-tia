@@ -190,28 +190,38 @@ def nullHeuristic(state, problem=None):
 
 def aStarSearch(problem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
-    "*** YOUR CODE HERE ***"
+    from util import PriorityQueue
 
-    frontier = util.PriorityQueue()
-    start_state = problem.getStartState()
-    frontier.push((start_state, [], 0), heuristic(start_state, problem))  # (estado, camino, coste)
-    explored = set()
+    start = problem.getStartState()
+    frontier = PriorityQueue()                # elementos: (estado, camino, g)
+    frontier.push((start, [], 0), 0 + heuristic(start, problem))
+
+    mejor_costo = {start: 0}                  # g*(estado) = mejor coste conocido hasta estado
+    visitados = set()                         # opcional: cerrados para evitar reprocesar
 
     while not frontier.isEmpty():
-        state, path, cost_so_far = frontier.pop()
+        estado, camino, g = frontier.pop()
 
-        if problem.isGoalState(state):
-            return path
+        # Entrada obsoleta: si existe un g mejor registrado, se ignora
+        if g > mejor_costo.get(estado, float('inf')):
+            continue
 
-        if state not in explored:
-            explored.add(state)
+        if problem.isGoalState(estado):
+            return camino
 
-            for successor, action, step_cost in problem.getSuccessors(state):
-                new_cost = cost_so_far + step_cost
-                priority = new_cost + heuristic(successor, problem)
-                frontier.push((successor, path + [action], new_cost), priority)
+        if estado in visitados:
+            continue
+        visitados.add(estado)
+
+        for sucesor, accion, paso in problem.getSuccessors(estado):
+            nuevo_g = g + paso
+            if nuevo_g < mejor_costo.get(sucesor, float('inf')):
+                mejor_costo[sucesor] = nuevo_g
+                f = nuevo_g + heuristic(sucesor, problem)
+                frontier.push((sucesor, camino + [accion], nuevo_g), f)
 
     return []
+
 
 # Abbreviations
 bfs = breadthFirstSearch
