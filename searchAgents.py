@@ -308,14 +308,26 @@ class CornersProblem(search.SearchProblem):
         space)
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+
+        # cornersVisited[i] es True si la esquina self.corners[i] ya está visitada al iniciar
+        esquinas_visitadas = []
+        #recorremos todas las esquinas y vemos si estan visitadas
+        for corner in self.corners:
+            esta_visitada = False
+            if self.startingPosition == corner:
+                esta_visitada = True
+            esquinas_visitadas.append(esta_visitada)
+        esquinas_visitadas = tuple(esquinas_visitadas)
+        #el estado inicial es la posicion inicial y el array de esquinas visitadas
+        estado_inicial = (self.startingPosition, esquinas_visitadas)
+        return estado_inicial
 
     def isGoalState(self, state):
-        """
-        Returns whether this search state is a goal state of the problem.
-        """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        position, esquinas_visitadas = state
+        for visitado in esquinas_visitadas:
+            if not visitado:
+                return False
+        return True
 
     def getSuccessors(self, state):
         """
