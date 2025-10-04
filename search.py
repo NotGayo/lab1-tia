@@ -116,7 +116,6 @@ def breadthFirstSearch(problem):
     frontera.push((start, []))  # (estado, camino_de_acciones)
     visitados = set([start])
 
-
     while not frontera.isEmpty():
         estado, camino = frontera.pop()
 

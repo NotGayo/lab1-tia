@@ -36,6 +36,8 @@ Good luck and happy searching!
 
 import time
 
+from scipy.stats import false_discovery_control
+
 import search
 import util
 from game import Actions
@@ -282,8 +284,6 @@ def euclideanHeuristic(position, problem, info={}):
 class CornersProblem(search.SearchProblem):
     """
     This search problem finds paths through all four corners of a layout.
-
-    You must select a suitable state space and successor function
     """
 
     def __init__(self, startingGameState):
@@ -298,73 +298,71 @@ class CornersProblem(search.SearchProblem):
             if not startingGameState.hasFood(*corner):
                 print('Warning: no food in corner ' + str(corner))
         self._expanded = 0  # DO NOT CHANGE; Number of search nodes expanded
-        # Please add any code here which you would like to use
-        # in initializing the problem
-        "*** YOUR CODE HERE ***"
+
+        # Initialize corners visited based on starting position
+        corners_visited = []
+        for corner in self.corners:
+            corners_visited.append(self.startingPosition == corner)
+        corners_visited = tuple(corners_visited)
+
+        # Store start state (position, corners visited)
+        self.start_state = (self.startingPosition, corners_visited)
 
     def getStartState(self):
         """
-        Returns the start state (in your state space, not the full Pacman state
-        space)
+        Returns the start state (position, corners visited).
         """
-        "*** YOUR CODE HERE ***"
-
-        # cornersVisited[i] es True si la esquina self.corners[i] ya está visitada al iniciar
-        esquinas_visitadas = []
-        #recorremos todas las esquinas y vemos si estan visitadas
-        for corner in self.corners:
-            esta_visitada = False
-            if self.startingPosition == corner:
-                esta_visitada = True
-            esquinas_visitadas.append(esta_visitada)
-        esquinas_visitadas = tuple(esquinas_visitadas)
-        #el estado inicial es la posicion inicial y el array de esquinas visitadas
-        estado_inicial = (self.startingPosition, esquinas_visitadas)
-        return estado_inicial
+        return self.start_state
 
     def isGoalState(self, state):
-        position, esquinas_visitadas = state
-        for visitado in esquinas_visitadas:
-            if not visitado:
-                return False
-        return True
+        """
+        Goal is reached when all corners have been visited.
+        """
+        cosa, corners_visited = state
+        return all(corners_visited)
 
     def getSuccessors(self, state):
         """
-        Returns successor states, the actions they require, and a cost of 1.
-
-         As noted in search.py:
-            For a given state, this should return a list of triples, (successor,
-            action, stepCost), where 'successor' is a successor to the current
-            state, 'action' is the action required to get there, and 'stepCost'
-            is the incremental cost of expanding to that successor
+        For a given state, returns a list of triples (successor, action, stepCost).
         """
-
         successors = []
-        for action in [Directions.NORTH, Directions.SOUTH, Directions.EAST, Directions.WEST]:
-            # Add a successor state to the successor list if the action is legal
-            # Here's a code snippet for figuring out whether a new position hits a wall:
-            #   x,y = currentPosition
-            #   dx, dy = Actions.directionToVector(action)
-            #   nextx, nexty = int(x + dx), int(y + dy)
-            #   hitsWall = self.walls[nextx][nexty]
+        position, corners_visited = state
+        x, y = position
 
-            "*** YOUR CODE HERE ***"
+        for action in [Directions.NORTH, Directions.SOUTH, Directions.EAST, Directions.WEST]:
+            dx, dy = Actions.directionToVector(action)
+            nextx, nexty = int(x + dx), int(y + dy)
+
+            # Skip if hits a wall
+            if self.walls[nextx][nexty]:
+                continue
+
+            # Update corners visited if new position is a corner
+            new_corners_visited = list(corners_visited)
+            for i, corner in enumerate(self.corners):
+                if (nextx, nexty) == corner:
+                    new_corners_visited[i] = True
+            new_corners_visited = tuple(new_corners_visited)
+
+            new_state = ((nextx, nexty), new_corners_visited)
+            successors.append((new_state, action, 1))
 
         self._expanded += 1  # DO NOT CHANGE
         return successors
 
     def getCostOfActions(self, actions):
         """
-        Returns the cost of a particular sequence of actions.  If those actions
-        include an illegal move, return 999999.  This is implemented for you.
+        Returns the total cost of a particular sequence of actions.
+        If any move is illegal, returns a large number.
         """
-        if actions is None: return 999999
+        if actions is None:
+            return 999999
         x, y = self.startingPosition
         for action in actions:
             dx, dy = Actions.directionToVector(action)
             x, y = int(x + dx), int(y + dy)
-            if self.walls[x][y]: return 999999
+            if self.walls[x][y]:
+                return 999999
         return len(actions)
 
 
