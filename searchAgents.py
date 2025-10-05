@@ -37,6 +37,7 @@ Good luck and happy searching!
 import time
 
 from scipy.stats import false_discovery_control
+from seaborn.external.husl import xyz_to_luv
 
 import search
 import util
@@ -383,6 +384,26 @@ def cornersHeuristic(state, problem):
     walls = problem.walls  # These are the walls of the maze, as a Grid (game.py)
 
     "*** YOUR CODE HERE ***"
+    pos, true_corner_vector = state
+    x,y = pos
+
+    #FILTRAMOS DE LOS 4 CORNERS ORIGNALES LOS QUE QUEDAN POR VISITAR
+    no_visitado = []
+    for corner,vis in corners,true_corner_vector:
+        if not vis:
+            no_visitado.append(corner)
+
+
+
+
+    #for cx,cy in no_visitado:
+
+
+
+    #CALCULAR TODAS LAS MANHT
+
+
+
     return 0  # Default to trivial solution
 
 
@@ -484,9 +505,37 @@ def foodHeuristic(state, problem):
     Subsequent calls to this heuristic can access
     problem.heuristicInfo['wallCount']
     """
-    position, foodGrid = state
+
+    #position = (x,y)
+    #foodGrid = [[T][T][F][F]]
+               #[[T][F][F][F]]
+               #[[T][T][T][F]]
+               #[[T][T][F][F]]
+
+    # POSTION 3,2 -> 3 COL , 2 ROW
+
     "*** YOUR CODE HERE ***"
-    return 0
+
+    position, foodGrid = state
+    foodList = []
+    for x in range(foodGrid.width):
+        for y in range(foodGrid.height):
+            if foodGrid[x][y]:
+                foodList.append((x, y))
+    #Conello convertimos a una lista el TIPO GRID QUE NO ES BASICO DE PYUTHON
+
+    if not foodList:
+        return 0
+    #caso final no hay mas trues en el vectosr
+    min_distance = 99999999
+    for pos_food in foodList:
+        distancia = mazeDistance(position, pos_food, problem.startingGameState)
+        if distancia < min_distance:
+            min_distance = distancia
+
+    return min_distance
+
+
 
 
 class ClosestDotSearchAgent(SearchAgent):
