@@ -522,7 +522,8 @@ def foodHeuristic(state, problem):
         for y in range(foodGrid.height):
             if foodGrid[x][y]:
                 foodList.append((x, y))
-    #Conello convertimos a una lista el TIPO GRID QUE NO ES BASICO DE PYUTHON
+    #Conello convertimos a una lista el TIPO GRID QUE NO ES BASICO DE PYUTHON Y LIMPIAMOS LA liysta
+
 
     if not foodList:
         return 0
