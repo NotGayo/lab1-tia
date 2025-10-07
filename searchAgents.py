@@ -334,11 +334,9 @@ class CornersProblem(search.SearchProblem):
             dx, dy = Actions.directionToVector(action)
             nextx, nexty = int(x + dx), int(y + dy)
 
-            # Skip if hits a wall
             if self.walls[nextx][nexty]:
                 continue
 
-            # Update corners visited if new position is a corner
             new_corners_visited = list(corners_visited)
             for i, corner in enumerate(self.corners):
                 if (nextx, nexty) == corner:
@@ -371,41 +369,37 @@ def cornersHeuristic(state, problem):
     """
     A heuristic for the CornersProblem that you defined.
 
-      state:   The current search state
-               (a data structure you chose in your search problem)
-
+      state:   The current search state (currentPosition, visitedCorners)
       problem: The CornersProblem instance for this layout.
-
-    This function should always return a number that is a lower bound on the
-    shortest path from the state to a goal of the problem; i.e.  it should be
-    admissible (as well as consistent).
     """
-    corners = problem.corners  # These are the corner coordinates
-    walls = problem.walls  # These are the walls of the maze, as a Grid (game.py)
+    currentPosition, visitedCorners = state
+    corners = problem.corners
 
-    "*** YOUR CODE HERE ***"
-    pos, true_corner_vector = state
-    x,y = pos
+    # Identificar las esquinas que aún no han sido visitadas
+    esquinas_no_v = [corner for corner in corners if corner not in visitedCorners]
 
-    #FILTRAMOS DE LOS 4 CORNERS ORIGNALES LOS QUE QUEDAN POR VISITAR
-    no_visitado = []
-    for corner,vis in corners,true_corner_vector:
-        if not vis:
-            no_visitado.append(corner)
+    # Calcular la distancia mínima utilizando la distancia Manhattan
+    heuristic = 0
+    current = currentPosition
 
+    # Si no hay esquinas por visitar, la heurística es 0
 
+    while esquinas_no_v:
+        # Encontrar la esquina más cercana (distancia Manhattan)
+        distances = []
 
+        for corner in esquinas_no_v:
+            distancia = util.manhattanDistance(current, corner)
+            distances.append((distancia, corner))
 
-    #for cx,cy in no_visitado:
+        minDistance, closestCorner = min(distances)
 
+        # Agregar la distancia mínima a la heurística y moverse a la siguiente esquina
+        heuristic += minDistance
+        current = closestCorner
+        esquinas_no_v.remove(closestCorner)
 
-
-    #CALCULAR TODAS LAS MANHT
-
-
-
-    return 0  # Default to trivial solution
-
+    return heuristic
 
 class AStarCornersAgent(SearchAgent):
     """A SearchAgent for FoodSearchProblem using A* and your foodHeuristic"""
@@ -568,7 +562,10 @@ class ClosestDotSearchAgent(SearchAgent):
         problem = AnyFoodSearchProblem(gameState)
 
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        problem = AnyFoodSearchProblem(gameState)
+
+        # Utiliza el algoritmo de búsqueda (BFS en este caso) para encontrar el camino más corto hacia el punto de comida más cercano
+        return search.breadthFirstSearch(problem)
 
 
 class AnyFoodSearchProblem(PositionSearchProblem):
@@ -606,7 +603,8 @@ class AnyFoodSearchProblem(PositionSearchProblem):
         x, y = state
 
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        return self.food[x][y]
+
 
 
 def mazeDistance(point1, point2, gameState):
